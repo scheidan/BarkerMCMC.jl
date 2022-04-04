@@ -3,6 +3,7 @@ module BarkerMCMC
 export barker_mcmc
 
 using LinearAlgebra
+using ProgressMeter: @showprogress
 
 """
 Barker MCMC
@@ -51,7 +52,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
     Σ = diagm(ones(d))
     C = cholesky(Σ)
 
-    for t in 2:n_iter
+    @showprogress 1 "Sampling... " for t in 2:n_iter
 
         x = @view chain[t-1,:]
 

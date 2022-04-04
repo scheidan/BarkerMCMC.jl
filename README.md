@@ -6,11 +6,15 @@ __ This is Work in Progress! __
 A Monte Carlo Markov Chain sampler that makes use of gradient
 information. Proposed by Livingstone et al. (2020)
 
-The adaptation is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
+The adaptative preconditioning is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
+
+### Installation
+
+`] add https://github.com/scheidan/BarkerMCMC.jl`
 
 ### Usage
 
-For details see doc string of `barker_mcmc`.
+For details see doc string of `barker_mcmc` for all arguments.
 
 ```Julia
 using BarkerMCMC
@@ -33,17 +37,17 @@ samp = barker_mcmc(log_p_rosebruck_2d, ∇log_p_rosebruck_2d,
 
 
 # --- Result
+
 # acceptance rate
 length(unique(samp[:,1])) / size(samp, 1)
 
 plot(
     histogram2d(samp[:,1], samp[:,2], bins=50),
-    plot(samp[:,1], samp[:,2], alpha=0.2),
+    scatter(samp[:,1], samp[:,2], alpha=0.2),
 
-    plot(samp[:,1], label="x[1]"),
-    plot(samp[:,2], label="x[2]")
+    plot(samp[:,1], label="chain x[1]"),
+    plot(samp[:,2], label="chain x[2]")
 )
-
 ```
 
 

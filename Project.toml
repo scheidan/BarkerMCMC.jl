@@ -3,6 +3,10 @@ uuid = "be4af45d-7920-418d-be3f-405e75a2263c"
 authors = ["Andreas Scheidegger <andreas.scheidegger@eawag.ch"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+
 [compat]
 julia = "1.6"
 
