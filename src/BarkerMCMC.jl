@@ -127,8 +127,11 @@ function acceptance_prob_7_3(log_π, gradient,
 
     l = log_πᵖ - log_π
     for i in 1:length(gradient)
-        l += log(1 + exp(-z[i] * c[i])) -
-            log( 1 + exp( z[i] * cᵖ[i]))
+        # same as:
+        # l += log(1 + exp(-z[i] * c[i])) -
+        #    log( 1 + exp( z[i] * cᵖ[i]))
+        l += log1p(exp(-z[i] *  c[i])) -
+            log1p(exp(  z[i] * cᵖ[i]))
     end
     return min(1, exp(l))
 end
