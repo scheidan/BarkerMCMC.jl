@@ -48,6 +48,14 @@ plot(
     plot(samp[:,1], label="chain x[1]"),
     plot(samp[:,2], label="chain x[2]")
 )
+
+# You may want to use MCMCChains for plots and diagonstics:
+using MCMCChains
+using StatsPlots
+
+chain = Chains(samp, [:x1, :x2])
+chains[200:end]                 # remove burn-in
+plot(chains)
 ```
 
 
