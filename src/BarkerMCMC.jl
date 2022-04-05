@@ -24,6 +24,11 @@ The adaptation is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
 - `κ = 0.6`: controls adaptation speed. Larger values lead to slower adaptation.
 - `n_iter_adaptation = Inf`: number of iterations with adaptation
 
+### Return Value
+
+An array containing the samples.
+
+
 ### References
 
 Andrieu, C., Thoms, J., 2008. A tutorial on adaptive MCMC. Statistics and computing 18, 343–373.
@@ -84,7 +89,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
             μ .+= γ .* (x .- μ)
             tmp = x - μ
             Σ .+= γ*(tmp * tmp' - Σ)
-            C = cholesky(Σ)
+            C = cholesky(Hermitian(Σ))
         end
 
     end
