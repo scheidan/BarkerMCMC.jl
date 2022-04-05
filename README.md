@@ -4,9 +4,11 @@
 __ This is Work in Progress! __
 
 A Monte Carlo Markov Chain sampler that makes use of gradient
-information. Proposed by Livingstone et al. (2020)
+information. Proposed by Livingstone et al. (2021)
 
-The adaptative preconditioning is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
+The adaptative preconditioning is based on Andrieu and Thoms (2008),
+Algorithm 4 in Section 5. Algorithm 7.2 of the supporting information
+of Livingstone et al. (2021) is implemented.
 
 ### Installation
 
@@ -14,11 +16,10 @@ The adaptative preconditioning is based on Andrieu and Thoms (2008), Algorithm 4
 
 ### Usage
 
-For details see doc string of `barker_mcmc` for all arguments.
+See the doc string of `barker_mcmc` for all arguments.
 
 ```Julia
 using BarkerMCMC
-using Plots
 
 # --- Target distribution
 function log_p_rosebruck_2d(x; k=1/200)
@@ -31,6 +32,7 @@ function ∇log_p_rosebruck_2d(x; k=1/200)
 end
 
 # --- Sampling
+# see `?barker_mcmc` for all options
 samp = barker_mcmc(log_p_rosebruck_2d, ∇log_p_rosebruck_2d,
                    [5.0, 5.0];
                    n_iter = 1000);
@@ -41,21 +43,20 @@ samp = barker_mcmc(log_p_rosebruck_2d, ∇log_p_rosebruck_2d,
 # acceptance rate
 length(unique(samp[:,1])) / size(samp, 1)
 
-plot(
-    histogram2d(samp[:,1], samp[:,2], bins=50),
-    scatter(samp[:,1], samp[:,2], alpha=0.2),
+# You may want to use `MCMCChains.jl` for plots and diagonstics
+# (must be installed separately)
 
-    plot(samp[:,1], label="chain x[1]"),
-    plot(samp[:,2], label="chain x[2]")
-)
-
-# You may want to use MCMCChains for plots and diagonstics:
 using MCMCChains
 using StatsPlots
 
 chain = Chains(samp, [:x1, :x2])
-chains[200:end]                 # remove burn-in
+chains[200:10:end]                 # remove burn-in and thinning
+
 plot(chains)
+meanplot(chain)
+histogram(chain)
+autocorplot(chain)
+corner(chain)
 ```
 
 
@@ -63,4 +64,4 @@ plot(chains)
 
 Andrieu, C., Thoms, J., 2008. A tutorial on adaptive MCMC. Statistics and computing 18, 343–373.
 
-Livingstone, S., Zanella, G., n.d. The Barker proposal: Combining robustness and efficiency in gradient-based MCMC. Journal of the Royal Statistical Society: Series B (Statistical Methodology) n/a. https://doi.org/10.1111/rssb.12482
+Livingstone, S., Zanella, G., 2021. The Barker proposal: Combining robustness and efficiency in gradient-based MCMC. Journal of the Royal Statistical Society: Series B (Statistical Methodology). https://doi.org/10.1111/rssb.12482
