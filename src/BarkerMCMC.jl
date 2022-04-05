@@ -38,7 +38,7 @@ Livingstone, S., Zanella, G., n.d. The Barker proposal: Combining robustness and
 function barker_mcmc(log_p::Function, ∇log_p::Function,
                      inits::AbstractVector;
                      n_iter = 100::Int, σ = 2.4/(length(inits)^(1/6)),
-                     target_acceptance_rate = 0.4, κ=0.6,
+                     target_acceptance_rate = 0.4, κ = 0.6,
                      n_iter_adaptation = Inf)
 
     d = length(inits)
