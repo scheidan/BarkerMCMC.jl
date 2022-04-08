@@ -27,8 +27,9 @@ The adaptation is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
 
 ### Return Value
 
-An array containing the samples.
-
+A named tuple with fields:
+- `samples`: array containing the samples
+- `log_p`: vector containing the value of `log_p` for each sample.
 
 ### References
 
@@ -45,9 +46,10 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
 
     d = length(inits)
     chain = Array{Float64}(undef, n_iter, d)
-    chain[1,:] .= inits
+    log_ps = Vector{Float64}(undef, n_iter)
 
-    log_π = log_p(inits)
+    chain[1,:] .= inits
+    log_π = log_ps[1] = log_p(inits)
     gradient = ∇log_p(inits)
 
     length(gradient) == d ||
@@ -79,9 +81,10 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
         if rand() < prob_accept
             chain[t,:] .= xᵖ
             gradient = gradientᵖ
-            log_π = log_πᵖ
+            log_π = log_ps[t] = log_πᵖ
         else
             chain[t,:] .= x
+            log_ps[t] = log_π
         end
 
         # -- adaptation, see Livingstone, eq(24) - eq(26)
@@ -98,7 +101,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
 
     end
 
-    return chain
+    return (samples = chain, log_p = log_ps)
 end
 
 

@@ -33,15 +33,19 @@ end
 
 # --- Sampling
 # see `?barker_mcmc` for all options
-samp = barker_mcmc(log_p_rosebruck_2d, ∇log_p_rosebruck_2d,
-                   [5.0, 5.0];
-                   n_iter = 1000);
+res = barker_mcmc(log_p_rosebruck_2d,
+                  ∇log_p_rosebruck_2d,
+                  [5.0, 5.0];
+                  n_iter = 1_000,
+				  target_acceptance_rate=0.4)
 
+res.samples
+res.log_p
 
 # --- Result
 
 # acceptance rate
-length(unique(samp[:,1])) / size(samp, 1)
+length(unique(res.samples[:,1])) / size(res.samples, 1)
 
 # You may want to use `MCMCChains.jl` for plots and diagonstics
 # (must be installed separately)
@@ -49,7 +53,7 @@ length(unique(samp[:,1])) / size(samp, 1)
 using MCMCChains
 using StatsPlots
 
-chain = Chains(samp, [:x1, :x2])
+chain = Chains(res.samples, [:x1, :x2])
 chains[200:10:end]                 # remove burn-in and thinning
 
 plot(chains)

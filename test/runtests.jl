@@ -12,14 +12,15 @@ using Test
          -200*k*(x[2] - x[1]^2)]                        # d/dx[2]
     end
 
-    samp = barker_mcmc(log_p_rosebruck_2d, ∇log_p_rosebruck_2d,
-                       [5, -5];
-                       n_iter = 100,
-                       σ = 2.4/(2^(1/6)),
-                       target_acceptance_rate = 0.4,
-                       κ = 0.6,
-                       n_iter_adaptation = Inf)
+    res = barker_mcmc(log_p_rosebruck_2d, ∇log_p_rosebruck_2d,
+                      [5, -5];
+                      n_iter = 100,
+                      σ = 2.4/(2^(1/6)),
+                      target_acceptance_rate = 0.4,
+                      κ = 0.6,
+                      n_iter_adaptation = Inf)
 
-    @test size(samp) == (100, 2)
+    @test size(res.samples) == (100, 2)
+    @test length(res.log_p) == 100
 
 end
