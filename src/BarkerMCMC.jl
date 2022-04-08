@@ -55,22 +55,22 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
     log_σ = log(σ)
     μ = zeros(d)
     Σ = diagm(ones(d))
-    C = cholesky(Σ)
+    M = cholesky(Σ).L
 
     @showprogress 1 "Sampling... " for t in 2:n_iter
 
         x = @view chain[t-1,:]
 
         # -- sample proposal
-        xᵖ, z = barker_proposal_7_2(x, gradient, exp(log_σ), C)
+        xᵖ, z = barker_proposal(x, gradient, exp(log_σ), M)
 
         log_πᵖ = log_p(xᵖ)
         gradientᵖ =  ∇log_p(xᵖ)
 
         # -- acceptance probability, Alg. 7.3
-        prob_accept = acceptance_prob_7_3(log_π, gradient,
-                                          log_πᵖ, gradientᵖ,
-                                          z, C)
+        prob_accept = acceptance_prob(log_π, gradient,
+                                      log_πᵖ, gradientᵖ,
+                                      z, M)
 
         # -- accept / reject
         if rand() < prob_accept
@@ -89,7 +89,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
             μ .+= γ .* (x .- μ)
             tmp = x - μ
             Σ .+= γ*(tmp * tmp' - Σ)
-            C = cholesky(Hermitian(Σ))
+            M = cholesky(Hermitian(Σ)).L
         end
 
     end
@@ -100,14 +100,14 @@ end
 
 
 """
-Preconditioned Barker proposal.
+Preconditioned Barker proposal. Proposal is transformed by matrix `M` .
 See Algorithm 7.2, Livingstone et al. (2020), supporting material.
 """
-function barker_proposal_7_2(x::AbstractArray, gradient::AbstractArray,
-                             σ::Float64, C::Cholesky)
+function barker_proposal(x::AbstractArray, gradient::AbstractArray,
+                         σ::Float64, M::AbstractMatrix)
 
     z = σ .* randn(length(x))
-    c = gradient' * C.L
+    c = gradient' * M
     for i in 1:length(x)
         p = inv( 1 + exp(-z[i] * c[i]) )
         if rand() > p
@@ -115,20 +115,21 @@ function barker_proposal_7_2(x::AbstractArray, gradient::AbstractArray,
         end
     end
 
-    xᵖ = x + C.L * z
+    xᵖ = x + M * z
     return xᵖ, z
 end
+
 
 """
 Acceptance probability for preconditioned Barker proposal.
 See Algorithm 7.3, Livingstone et al. (2020), supporting material.
 """
-function acceptance_prob_7_3(log_π, gradient,
-                             log_πᵖ, gradientᵖ,
-                             z, C)
+function acceptance_prob(log_π, gradient,
+                         log_πᵖ, gradientᵖ,
+                         z, M::AbstractMatrix)
 
-    c =  gradient' * C.L
-    cᵖ =  gradientᵖ' * C.L
+    c =  gradient' * M
+    cᵖ =  gradientᵖ' * M
 
     l = log_πᵖ - log_π
     for i in 1:length(gradient)
