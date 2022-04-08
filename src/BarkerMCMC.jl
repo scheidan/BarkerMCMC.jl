@@ -23,6 +23,9 @@ The adaptation is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
 - `target_acceptance_rate = 0.4`: desired accept rate
 - `κ = 0.6`: controls adaptation speed. Larger values lead to slower adaptation.
 - `n_iter_adaptation = Inf`: number of iterations with adaptation
+- `preconditioning = :eigen`: Either `:eigen` or `cholesky`. Calculating the
+ preconditioning matrix with a cholesky decomposition is slighly cheaper, however, the
+eigen value decomposition allows for a proper rotation of the proposal distribution.
 
 ### Return Value
 
@@ -39,7 +42,8 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
                      inits::AbstractVector;
                      n_iter = 100::Int, σ = 2.4/(length(inits)^(1/6)),
                      target_acceptance_rate = 0.4, κ = 0.6,
-                     n_iter_adaptation = Inf)
+                     n_iter_adaptation = Inf,
+                     preconditioning::Symbol = :eigen)
 
     d = length(inits)
     chain = Array{Float64}(undef, n_iter, d)
@@ -55,7 +59,15 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
     log_σ = log(σ)
     μ = zeros(d)
     Σ = diagm(ones(d))
-    M = cholesky(Σ).L
+
+    if preconditioning == :cholesky
+        M = cholesky(Σ).L
+    elseif preconditioning == :eigen
+        V, R = eigen(Hermitian(Σ))
+        M = R * diagm(sqrt.(V))
+    else
+        error("Argument 'preconditioning' must be `:cholesky` or `:eigen`, not `$preconditioning`!")
+    end
 
     @showprogress 1 "Sampling... " for t in 2:n_iter
 
@@ -89,7 +101,14 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
             μ .+= γ .* (x .- μ)
             tmp = x - μ
             Σ .+= γ*(tmp * tmp' - Σ)
-            M = cholesky(Hermitian(Σ)).L
+
+            if preconditioning == :cholesky
+                M = cholesky(Σ).L
+            else preconditioning == :eigen
+                V, R = eigen(Hermitian(Σ))
+                M = R * diagm(sqrt.(V))
+            end
+
         end
 
     end
