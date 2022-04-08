@@ -23,9 +23,7 @@ The adaptation is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
 - `target_acceptance_rate = 0.4`: desired accept rate
 - `κ = 0.6`: controls adaptation speed. Larger values lead to slower adaptation.
 - `n_iter_adaptation = Inf`: number of iterations with adaptation
-- `preconditioning = :eigen`: Either `:eigen` or `cholesky`. Calculating the
- preconditioning matrix with a cholesky decomposition is slighly cheaper, however, the
-eigen value decomposition allows for a proper rotation of the proposal distribution.
+- `preconditioning::Function = BarkerMCMC.precond_eigen`: Either `BarkerMCMC.precond_eigen` or `BarkerMCMC.precond_cholesky`. Calculating the preconditioning matrix with a cholesky decomposition is slighly cheaper, however, the eigen value decomposition allows for a proper rotation of the proposal distribution.
 
 ### Return Value
 
@@ -36,14 +34,14 @@ An array containing the samples.
 
 Andrieu, C., Thoms, J., 2008. A tutorial on adaptive MCMC. Statistics and computing 18, 343–373.
 
-Livingstone, S., Zanella, G., n.d. The Barker proposal: Combining robustness and efficiency in gradient-based MCMC. Journal of the Royal Statistical Society: Series B (Statistical Methodology) n/a. https://doi.org/10.1111/rssb.12482
+Livingstone, S., Zanella, G., 2021. The Barker proposal: Combining robustness and efficiency in gradient-based MCMC. Journal of the Royal Statistical Society: Series B (Statistical Methodology). https://doi.org/10.1111/rssb.12482
 """
 function barker_mcmc(log_p::Function, ∇log_p::Function,
                      inits::AbstractVector;
                      n_iter = 100::Int, σ = 2.4/(length(inits)^(1/6)),
                      target_acceptance_rate = 0.4, κ = 0.6,
                      n_iter_adaptation = Inf,
-                     preconditioning::Symbol = :eigen)
+                     preconditioning::Function = precond_eigen)
 
     d = length(inits)
     chain = Array{Float64}(undef, n_iter, d)
@@ -60,14 +58,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
     μ = zeros(d)
     Σ = diagm(ones(d))
 
-    if preconditioning == :cholesky
-        M = cholesky(Σ).L
-    elseif preconditioning == :eigen
-        V, R = eigen(Hermitian(Σ))
-        M = R * diagm(sqrt.(V))
-    else
-        error("Argument 'preconditioning' must be `:cholesky` or `:eigen`, not `$preconditioning`!")
-    end
+    M = preconditioning(Hermitian(Σ))
 
     @showprogress 1 "Sampling... " for t in 2:n_iter
 
@@ -102,13 +93,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
             tmp = x - μ
             Σ .+= γ*(tmp * tmp' - Σ)
 
-            if preconditioning == :cholesky
-                M = cholesky(Σ).L
-            else preconditioning == :eigen
-                V, R = eigen(Hermitian(Σ))
-                M = R * diagm(sqrt.(V))
-            end
-
+            M = preconditioning(Hermitian(Σ))
         end
 
     end
@@ -159,6 +144,28 @@ function acceptance_prob(log_π, gradient,
             log1p(exp(  z[i] * cᵖ[i]))
     end
     return min(1, exp(l))
+end
+
+
+"""
+Given a covariance matrix Σ, computes the preconditioning matrix `M` based on cholesky decomposition.
+
+For `M` holds that
+cov(M * z) == Σ,
+where `z` a uncorrelated vector of random variables with zero mean.
+"""
+precond_cholesky(Σ::Hermitian) = cholesky(Σ).L
+
+"""
+Given a covariance matrix Σ, computes the preconditioning matrix `M` based on eigen value decomposition.
+
+For `M` holds that
+cov(M * z) == Σ,
+where `z` a uncorrelated vector of random variables with zero mean.
+"""
+function precond_eigen(Σ::Hermitian)
+    V, R = eigen(Σ)
+    R * diagm(sqrt.(V))
 end
 
 
