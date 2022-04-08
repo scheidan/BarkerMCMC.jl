@@ -37,7 +37,7 @@ res = barker_mcmc(log_p_rosebruck_2d,
                   ∇log_p_rosebruck_2d,
                   [5.0, 5.0];
                   n_iter = 1_000,
-				  target_acceptance_rate=0.4)
+                  target_acceptance_rate=0.4)
 
 res.samples
 res.log_p
