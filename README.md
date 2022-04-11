@@ -7,8 +7,8 @@ A Monte Carlo Markov Chain sampler that makes use of gradient
 information. Proposed by Livingstone et al. (2021)
 
 The adaptative preconditioning is based on Andrieu and Thoms (2008),
-Algorithm 4 in Section 5. Algorithm 7.2 of the supporting information
-of Livingstone et al. (2021) is implemented.
+Algorithm 4 in Section 5. For details see Algorithm 7.2 of the supporting information
+of Livingstone et al. (2021).
 
 ### Installation
 
