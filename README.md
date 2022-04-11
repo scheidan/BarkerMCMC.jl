@@ -63,9 +63,24 @@ autocorplot(chain)
 corner(chain)
 ```
 
+### Related Julia Packages
+
+- [MCMCChains.jl](https://github.com/TuringLang/MCMCChains.jl)
+
+#### Hamiltonian Monte Carlo (gradient based)
+
+- [DynamicHMC.jl](https://github.com/tpapp/DynamicHMC.jl)
+- [AdvancedHMC.jl](https://github.com/TuringLang/AdvancedHMC.jl)
+
+#### Adaptive MCMC (without gradient)
+
+- [AdaptiveMCMC.jl](https://github.com/mvihola/AdaptiveMCMC.jl)
+- [RobustAdaptiveMetropolisSampler.jl](https://github.com/anthofflab/RobustAdaptiveMetropolisSampler.jl)
+- [KissMCMC.jl](https://github.com/mauro3/KissMCMC.jl)
 
 ### References
 
 Andrieu, C., Thoms, J., 2008. A tutorial on adaptive MCMC. Statistics and computing 18, 343–373.
 
 Livingstone, S., Zanella, G., 2021. The Barker proposal: Combining robustness and efficiency in gradient-based MCMC. Journal of the Royal Statistical Society: Series B (Statistical Methodology). https://doi.org/10.1111/rssb.12482
+(see https://github.com/gzanella/barker for the R code used)
