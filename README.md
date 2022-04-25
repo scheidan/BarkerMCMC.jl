@@ -1,7 +1,6 @@
 # BarkerMCMC [![Build Status](https://github.com/scheidan/BarkerMCMC.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/scheidan/BarkerMCMC.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/scheidan/BarkerMCMC.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/scheidan/BarkerMCMC.jl)
 
 
-__ This is Work in Progress! __
 
 A Monte Carlo Markov Chain sampler that makes use of gradient
 information. Proposed by Livingstone et al. (2021)
