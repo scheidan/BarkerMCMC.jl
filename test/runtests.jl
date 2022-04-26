@@ -109,14 +109,14 @@ end
             BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
             for i in 1:n)...)
 
-        @test sum(xp[1,:] .> 0 .&& xp[2,:] .> 0 ) > 0.9*n # quadrant I
+        @test sum((xp[1,:] .> 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant I
 
         grad = [-1000.0, 1000.0]
         xp = hcat((
             BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
             for i in 1:n)...)
 
-        @test sum(xp[1,:] .< 0 .&& xp[2,:] .> 0 ) > 0.9*n # quadrant II
+        @test sum((xp[1,:] .< 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant II
 
     end
 
@@ -154,14 +154,14 @@ end
             BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
             for i in 1:n)...)
 
-        @test sum(xp[1,:] .> 0 .&& xp[2,:] .> 0 ) > 0.9*n # quadrant I
+        @test sum((xp[1,:] .> 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant I
 
         grad = [-1000.0, 1000.0]
         xp = hcat((
             BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
             for i in 1:n)...)
 
-        @test sum(xp[1,:] .< 0 .&& xp[2,:] .> 0 ) > 0.9*n # quadrant II
+        @test sum((xp[1,:] .< 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant II
 
     end
 
