@@ -19,18 +19,12 @@ jobs:
       matrix:
         version:
           - '1.6'
-          - '1.7'
-          - 'nightly'
+          - '1'  # latest stable 1.x release of Julia
         os:
           - ubuntu-latest
-          - macOS-latest
           - windows-latest
         arch:
-          - x64
           - x86
-        exclude:
-          - os: macOS-latest
-            arch: x86
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
