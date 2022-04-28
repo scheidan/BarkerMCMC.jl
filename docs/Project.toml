@@ -1,0 +1,6 @@
+[deps]
+BarkerMCMC = "be4af45d-7920-418d-be3f-405e75a2263c"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[compat]
+Documenter = "0.27"
