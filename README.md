@@ -13,11 +13,11 @@ of Livingstone et al. (2021).
 
 ### Installation
 
-`] add https://github.com/scheidan/BarkerMCMC.jl`
+`] add BarkerMCMC`
 
 ### Usage
 
-See the doc string of `barker_mcmc` for all arguments.
+See the documentation for all arguments.
 
 ```Julia
 using BarkerMCMC
