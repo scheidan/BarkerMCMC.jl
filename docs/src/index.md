@@ -18,7 +18,7 @@ modifications.
 You can find the repository with the source code [here](https://github.com/scheidan/BarkerMCMC.jl).
 
 
-## Example
+## Usage
 
 Here we sample from the 'banana-shaped' Rosenbruck function:
 
@@ -26,6 +26,7 @@ Here we sample from the 'banana-shaped' Rosenbruck function:
 using BarkerMCMC
 
 # --- Define target distribution and it's gradient
+#     (or use automatic differentation)
 
 function log_p_rosebruck_2d(x; k=1/200)
     -k*(100*(x[2] - x[1]^2)^2 + (1 - x[1])^2)
@@ -36,7 +37,7 @@ function ∇log_p_rosebruck_2d(x; k=1/200)
      -200*k*(x[2] - x[1]^2)]                        # d/dx[2]
 end
 
-# --- Sampling
+# --- Generate samples
 
 res = barker_mcmc(log_p_rosebruck_2d,
                   ∇log_p_rosebruck_2d,
@@ -47,7 +48,7 @@ res = barker_mcmc(log_p_rosebruck_2d,
 res.samples
 res.log_p
 
-# --- Result
+# --- Visualize results
 
 # acceptance rate
 length(unique(res.samples[:,1])) / size(res.samples, 1)

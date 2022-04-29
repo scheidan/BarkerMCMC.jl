@@ -27,8 +27,9 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
 - `inits::Vector`: initial starting values
 - `n_iter = 100`: number of iterations
 - `σ = 2.4/(length(inits)^(1/6))`: global scale of proposal distribution
-- `target_acceptance_rate = 0.4`: desired accept rate
-- `κ = 0.6`: controls adaptation speed. Larger values lead to slower adaptation, see Livingstone et al. (2020).
+- `target_acceptance_rate = 0.4`: desired acceptance rate
+- `κ = 0.6`: controls adaptation speed, κ ∈ (0.5, 1). Larger values lead to slower adaptation, see Section 6.1
+             in Livingstone et al. (2020).
 - `n_iter_adaptation = Inf`: number of iterations with adaptation
 - `preconditioning::Function = BarkerMCMC.precond_eigen`: Either `BarkerMCMC.precond_eigen` or `BarkerMCMC.precond_cholesky`. Calculating the preconditioning matrix with a cholesky decomposition is slighly cheaper, however, the eigen value decomposition allows for a proper rotation of the proposal distribution.
 
