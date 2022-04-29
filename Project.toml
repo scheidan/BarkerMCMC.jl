@@ -1,7 +1,7 @@
 name = "BarkerMCMC"
 uuid = "be4af45d-7920-418d-be3f-405e75a2263c"
 authors = ["Andreas Scheidegger <andreas.scheidegger@eawag.ch"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
