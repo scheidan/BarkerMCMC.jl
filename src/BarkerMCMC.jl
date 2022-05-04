@@ -78,7 +78,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
         xᵖ, z = barker_proposal(x, gradient, exp(log_σ), M)
 
         log_πᵖ = log_p(xᵖ)
-        gradientᵖ =  ∇log_p(xᵖ)
+        gradientᵖ = ∇log_p(xᵖ)
 
         # -- acceptance probability, Alg. 7.3
         prob_accept = acceptance_prob(log_π, gradient,
@@ -176,7 +176,7 @@ where `z` a uncorrelated vector of random variables with zero mean.
 """
 function precond_eigen(Σ::Hermitian)
     V, R = eigen(Σ)
-    R * diagm(sqrt.(V))
+    R * Diagonal(sqrt.(V))
 end
 
 
