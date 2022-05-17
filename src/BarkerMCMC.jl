@@ -123,7 +123,7 @@ function barker_proposal(x::AbstractArray, gradient::AbstractArray,
 
     z = σ .* randn(length(x))
     c = gradient' * M
-    for i in 1:length(x)
+    for i in eachindex(z)
         p = inv( 1 + exp(-z[i] * c[i]) )
         if rand() > p
             z[i] *= -1.0
@@ -147,7 +147,7 @@ function acceptance_prob(log_π, gradient,
     cᵖ =  gradientᵖ' * M
 
     l = log_πᵖ - log_π
-    for i in 1:length(gradient)
+    for i in eachindex(gradient)
         # same as:
         # l += log(1 + exp(-z[i] * c[i])) -
         #    log( 1 + exp( z[i] * cᵖ[i]))
