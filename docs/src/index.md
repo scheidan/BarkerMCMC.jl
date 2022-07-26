@@ -80,7 +80,7 @@ precond_cholesky
 precond_eigen
 ```
 
-### Related Julia Packages
+## Related Julia Packages
 
 - [MCMCChains.jl](https://github.com/TuringLang/MCMCChains.jl)
 
