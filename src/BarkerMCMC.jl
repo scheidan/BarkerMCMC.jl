@@ -4,6 +4,10 @@ export barker_mcmc
 
 using LinearAlgebra
 using ProgressMeter: @showprogress
+import LogDensityProblems
+
+include("logdensityproblem_interface.jl")
+
 
 """
 Adaptive MCMC sampler that makes use of gradient information. Based on Livingstone et al. (2020)
@@ -45,20 +49,24 @@ Andrieu, C., Thoms, J., 2008. A tutorial on adaptive MCMC. Statistics and comput
 
 Livingstone, S., Zanella, G., 2021. The Barker proposal: Combining robustness and efficiency in gradient-based MCMC. Journal of the Royal Statistical Society: Series B (Statistical Methodology). https://doi.org/10.1111/rssb.12482
 """
-function barker_mcmc(log_p::Function, ∇log_p::Function,
+function barker_mcmc(lp,
                      inits::AbstractVector;
                      n_iter = 100::Int, σ = 2.4/(length(inits)^(1/6)),
                      target_acceptance_rate = 0.4, κ::Float64 = 0.6,
                      n_iter_adaptation = Inf,
                      preconditioning::Function = precond_eigen)
 
-    d = length(inits)
+    d = LogDensityProblems.dimension(lp)
+    @assert LogDensityProblems.capabilities(lp) >= LogDensityProblems.LogDensityOrder(1)
+    @assert length(inits) == d
+
     chain = Array{Float64}(undef, n_iter, d)
     log_ps = Vector{Float64}(undef, n_iter)
 
+
     chain[1,:] .= inits
-    log_π = log_ps[1] = log_p(inits)
-    gradient = ∇log_p(inits)
+    log_π, gradient = LogDensityProblems.logdensity_and_gradient(lp, inits)
+    log_ps[1] = log_π
 
     length(gradient) == d ||
         error("Size of initial values $(size(inits)) and gradient $(size(gradient)) do not match!")
@@ -77,8 +85,7 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
         # -- sample proposal
         xᵖ, z = barker_proposal(x, gradient, exp(log_σ), M)
 
-        log_πᵖ = log_p(xᵖ)
-        gradientᵖ = ∇log_p(xᵖ)
+        log_πᵖ, gradientᵖ = LogDensityProblems.logdensity_and_gradient(lp, xᵖ)
 
         # -- acceptance probability, Alg. 7.3
         prob_accept = acceptance_prob(log_π, gradient,
@@ -113,6 +120,13 @@ function barker_mcmc(log_p::Function, ∇log_p::Function,
 end
 
 
+function barker_mcmc(log_p::Function, ∇log_p::Function,
+                     inits::AbstractVector;
+                     kwargs...)
+    lp = SimpleLogDensityProblem(log_p, ∇log_p, length(inits))
+    barker_mcmc(lp, inits; kwargs...)
+
+end
 
 """
 Preconditioned Barker proposal. Proposal is transformed by matrix `M` .
