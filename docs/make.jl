@@ -8,6 +8,7 @@ makedocs(;
     authors="Andreas Scheidegger <andreas.scheidegger@eawag.ch> and contributors",
     repo="https://github.com/scheidan/BarkerMCMC.jl/blob/{commit}{path}#{line}",
     sitename="BarkerMCMC.jl",
+    checkdocs=:exports,
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://scheidan.github.io/BarkerMCMC.jl",

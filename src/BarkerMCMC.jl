@@ -14,6 +14,18 @@ Adaptive MCMC sampler that makes use of gradient information. Based on Livingsto
 The adaptation is based on Andrieu and Thoms (2008), Algorithm 4 in Section 5.
 
 ```Julia
+barker_mcmc(lp,
+            inits::AbstractVector;
+            n_iter = 100::Int,
+            σ = 2.4/(length(inits)^(1/6)),
+            target_acceptance_rate = 0.4,
+            κ::Float64 = 0.6,
+            n_iter_adaptation = Inf,
+            preconditioning::Function = BarkerMCMC.precond_eigen)
+```
+
+or
+```Julia
 barker_mcmc(log_p::Function, ∇log_p::Function,
             inits::AbstractVector;
             n_iter = 100::Int,
@@ -26,6 +38,7 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
 
 ### Arguments
 
+- `lp`: log density object that supports the API of the `LogDensityProblems.jl` package
 - `log_p::Function`: function returning the log of the (non-normalized) density
 - `∇log_p::Function`: function returning the gradient of log of the (non-normalized) density
 - `inits::Vector`: initial starting values
@@ -119,7 +132,7 @@ function barker_mcmc(lp,
     return (samples = chain, log_p = log_ps)
 end
 
-
+# convince wrapper so that it can be used withouth the LogDensityProblems interface
 function barker_mcmc(log_p::Function, ∇log_p::Function,
                      inits::AbstractVector;
                      kwargs...)

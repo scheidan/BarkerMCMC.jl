@@ -20,7 +20,92 @@ You can find the repository with the source code [here](https://github.com/schei
 
 ## Usage
 
-Here we sample from the 'banana-shaped' Rosenbruck function:
+You can either define the log density compatible to
+[LogDensityProblems.jl](https://github.com/tpapp/LogDensityProblems.jl),
+or you provide the log density and it's
+gradient as two separate functions.
+
+### `LogDensityProblems` interface
+
+This approach is recommend to for most modeling tasks. This example
+demonstrate Bayesian inference of a simple regression. Note, that we
+use `TransformVariables.jl` to ensure that the
+standard deviation is always positive. The package takes care of the
+determinate correction.
+
+```
+using BarkerMCMC
+
+using TransformVariables: transform, inverse, as, asℝ, asℝ₊
+using TransformedLogDensities: TransformedLogDensity
+using LogDensityProblemsAD: ADgradient
+using Distributions
+
+# -----------
+# simulate data
+
+x = rand(10)
+y = 2 .+ 1.5*x .+ randn(10)*0.2
+
+
+# -----------
+# define model
+
+model(x, θ) = θ.a + θ.b*x
+
+function likelihood(θ, x, y)
+    ll = 0.0
+    for i in eachindex(y)
+        ll += logpdf(Normal(model(x[i], θ), θ.σ), y[i])
+    end
+    ll
+end
+
+function prior(θ)
+    logpdf(Normal(0,1), θ.a) +
+        logpdf(Normal(0,1), θ.b) +
+        logpdf(Exponential(1), θ.σ)
+end
+
+posterior(θ, x, y) = likelihood(θ, x, y) + prior(θ)
+
+# transformation σ to [0, ∞)
+trans = as((a = asℝ, b = asℝ, σ = asℝ₊))
+
+# -----------
+# define lp
+
+lp = TransformedLogDensity(trans, θ -> posterior(θ, x, y))
+
+# define gradient with AD
+lp = ADgradient(:ForwardDiff, lp)
+# lp= ADgradient(:Zygote, lp)  # we can use different AD backends
+
+
+# -----------
+# sample
+
+# we need the inits in transformed space
+inits = inverse(trans, (a=0, b=2, σ=0.5))
+
+results = barker_mcmc(lp,
+                      inits;
+                      n_iter = 10_000)
+
+# back-transform samples to original parameter space
+samples = [transform(trans, s)
+           for s in eachrow(results.samples)]
+
+# convert to array
+samplesArray = vcat((hcat(i...) for i in samples)...)
+```
+
+See the example below how the results can be visualized.
+
+
+### Function interface
+When not parameter transformations are required, the function interface
+can be a bit simpler to work with. Here we sample from the 'banana-shaped' Rosenbruck function:
 
 ```Julia
 using BarkerMCMC
@@ -82,6 +167,8 @@ precond_eigen
 
 ## Related Julia Packages
 
+- [LogDensityProblems.jl](https://github.com/tpapp/LogDensityProblems.jl)
+- [TransformVariables.jl](https://github.com/tpapp/TransformVariables.jl)
 - [MCMCChains.jl](https://github.com/TuringLang/MCMCChains.jl)
 
 #### Hamiltonian Monte Carlo (gradient based)
