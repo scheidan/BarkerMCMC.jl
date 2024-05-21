@@ -17,55 +17,18 @@ of Livingstone et al. (2021).
 
 ### Usage
 
-See the documentation for all arguments.
+The sampler can used in two ways: 
 
-```Julia
-using BarkerMCMC
+- defining the log density compatible to [LogDensityProblems.jl](https://github.com/tpapp/LogDensityProblems.jl), or
+- providing two seperate functions for the log density and it's gradient.
 
-# --- Target distribution
-function log_p_rosebruck_2d(x; k=1/200)
-    -k*(100*(x[2] - x[1]^2)^2 + (1 - x[1])^2)
-end
+See the [documentation](http://scheidan.github.io/BarkerMCMC.jl/dev) for examples of both apporaches.
 
-function ∇log_p_rosebruck_2d(x; k=1/200)
-    [-2*k*(200*x[1]^3 - 200*x[1]*x[2] + x[1] -1),   # d/dx[1]
-     -200*k*(x[2] - x[1]^2)]                        # d/dx[2]
-end
-
-# --- Sampling
-# see `?barker_mcmc` for all options
-res = barker_mcmc(log_p_rosebruck_2d,
-                  ∇log_p_rosebruck_2d,
-                  [5.0, 5.0];
-                  n_iter = 1_000,
-                  target_acceptance_rate=0.4)
-
-res.samples
-res.log_p
-
-# --- Result
-
-# acceptance rate
-length(unique(res.samples[:,1])) / size(res.samples, 1)
-
-# You may want to use `MCMCChains.jl` for plots and diagonstics
-# (must be installed separately)
-
-using MCMCChains
-using StatsPlots
-
-chain = Chains(res.samples, [:x1, :x2])
-chains[200:10:end]                 # remove burn-in and thinning
-
-plot(chains)
-meanplot(chain)
-histogram(chain)
-autocorplot(chain)
-corner(chain)
-```
 
 ### Related Julia Packages
 
+- [LogDensityProblems.jl](https://github.com/tpapp/LogDensityProblems.jl)
+- [TransformVariables.jl](https://github.com/tpapp/TransformVariables.jl)
 - [MCMCChains.jl](https://github.com/TuringLang/MCMCChains.jl)
 
 #### Hamiltonian Monte Carlo (gradient based)
