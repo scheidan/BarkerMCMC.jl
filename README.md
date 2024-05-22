@@ -22,7 +22,7 @@ The sampler can used in two ways:
 - defining the log density compatible to [LogDensityProblems.jl](https://github.com/tpapp/LogDensityProblems.jl), or
 - providing two seperate functions for the log density and it's gradient.
 
-See the [documentation](http://scheidan.github.io/BarkerMCMC.jl/dev) for examples of both apporaches.
+See the [documentation](http://scheidan.github.io/BarkerMCMC.jl/dev) for examples of both approaches.
 
 
 ### Related Julia Packages
