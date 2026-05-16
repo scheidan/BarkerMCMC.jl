@@ -104,8 +104,8 @@ See the example below how the results can be visualized.
 
 
 ### Function interface
-When not parameter transformations are required, the function interface
-can be a bit simpler to work with. Here we sample from the 'banana-shaped' Rosenbruck function:
+If no parameter transformation is needed, the function interface
+is simpler to work with. Here we sample from the 'banana-shaped' Rosenbruck function:
 
 ```Julia
 using BarkerMCMC
