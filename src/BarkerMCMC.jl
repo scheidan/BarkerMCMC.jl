@@ -206,7 +206,8 @@ where `z` a uncorrelated vector of random variables with zero mean.
 """
 function precond_eigen(Σ::Hermitian)
     V, R = eigen(Σ)
-    R * Diagonal(sqrt.(V))
+    λmin = eps(eltype(V)) * max(1, maximum(abs, V))
+    R * Diagonal(sqrt.(max.(V, λmin)))
 end
 
 

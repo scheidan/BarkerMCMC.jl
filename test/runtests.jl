@@ -73,6 +73,13 @@ end
         @test norm(cov(xp') .- Σ) < 0.2
     end
 
+    @testset "near-singular covariance" begin
+        Σ = Hermitian([1.0 1.0000000000000002;
+                       1.0000000000000002 1.0])
+        Mpred = BarkerMCMC.precond_eigen(Σ)
+        @test all(isfinite, Mpred)
+    end
+
     @testset "non-zero gradient, no correlation" begin
         x = zeros(2)
         Σ = Hermitian([1 0;
