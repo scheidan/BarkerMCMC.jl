@@ -29,6 +29,7 @@ See the [documentation](http://scheidan.github.io/BarkerMCMC.jl/dev) for example
 
 - [LogDensityProblems.jl](https://github.com/tpapp/LogDensityProblems.jl)
 - [TransformVariables.jl](https://github.com/tpapp/TransformVariables.jl)
+- [FlexiChains.jl](https://github.com/penelopeysm/FlexiChains.jl)
 - [MCMCChains.jl](https://github.com/TuringLang/MCMCChains.jl)
 
 #### Hamiltonian Monte Carlo (gradient based)
