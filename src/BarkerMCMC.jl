@@ -18,6 +18,7 @@ barker_mcmc(lp,
             inits::AbstractVector;
             n_iter = 100::Int,
             σ = 2.4/(length(inits)^(1/6)),
+            proposal_scale = ones(length(inits)),
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
             n_iter_adaptation = Inf,
@@ -30,6 +31,7 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
             inits::AbstractVector;
             n_iter = 100::Int,
             σ = 2.4/(length(inits)^(1/6)),
+            proposal_scale = ones(length(inits)),
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
             n_iter_adaptation = Inf,
@@ -43,7 +45,9 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
 - `∇log_p::Function`: function returning the gradient of log of the (non-normalized) density
 - `inits::Vector`: initial starting values
 - `n_iter = 100`: number of iterations
-- `σ = 2.4/(length(inits)^(1/6))`: global scale of proposal distribution
+- `σ = 2.4/(length(inits)^(1/6))`: global scale of proposal distribution.
+- `proposal_scale = ones(length(inits))`: initial per-dimension proposal scale,
+  before multiplication by the global scale `σ`: so the final scale is `σ * proposal_scale[i]`.
 - `target_acceptance_rate = 0.4`: desired acceptance rate
 - `κ = 0.6`: controls adaptation speed, κ ∈ (0.5, 1). Larger values lead to slower adaptation, see Section 6.1
              in Livingstone et al. (2020).
@@ -65,6 +69,7 @@ Livingstone, S., Zanella, G., 2021. The Barker proposal: Combining robustness an
 function barker_mcmc(lp,
                      inits::AbstractVector;
                      n_iter = 100::Int, σ = 2.4/(length(inits)^(1/6)),
+                     proposal_scale = ones(length(inits)),
                      target_acceptance_rate = 0.4, κ::Float64 = 0.6,
                      n_iter_adaptation = Inf,
                      preconditioning::Function = precond_eigen)
@@ -90,7 +95,7 @@ function barker_mcmc(lp,
     # initial value for adaptation
     log_σ = log(σ)
     μ = zeros(d)
-    Σ = diagm(ones(d))
+    Σ = diagm(proposal_scale.^2)
 
     M = preconditioning(Hermitian(Σ))
 

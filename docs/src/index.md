@@ -100,6 +100,24 @@ samples = [transform(trans, s)
 samplesArray = vcat((hcat(i...) for i in samples)...)
 ```
 
+The keyword `σ` controls the global proposal scale. It multiplies all
+dimensions and is adapted toward `target_acceptance_rate`. If the
+parameters have different scales, use `proposal_scale` to set
+the initial per-dimension scales:
+
+```Julia
+results = barker_mcmc(lp,
+                      inits;
+                      σ = 1.0,
+                      proposal_scale = [0.1, 2.0, 10.0],
+                      n_iter = 10_000)
+```
+
+With adaptation enabled, `proposal_scale` initializes the
+preconditioning matrix and adaptation may later change the effective
+per-dimension scales. With `n_iter_adaptation = 0`, the fixed proposal
+scale in dimension `i` is `σ * proposal_scale[i]`.
+
 See the example below how the results can be visualized.
 
 
