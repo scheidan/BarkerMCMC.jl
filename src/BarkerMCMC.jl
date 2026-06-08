@@ -77,9 +77,11 @@ function barker_mcmc(lp,
     d = LogDensityProblems.dimension(lp)
 
     LogDensityProblems.capabilities(lp) >= LogDensityProblems.LogDensityOrder(1) ||
-        error("The LogDensityProblem must proide gradient computation!")
+        error("The LogDensityProblem must provide gradient computation!")
     length(inits) == d ||
         error("The initial values must be of length $(d)!")
+    (0.5 < κ < 1) ||
+        error("κ must be in (0.5, 1)!")
 
     chain = Array{Float64}(undef, n_iter, d)
     log_ps = Vector{Float64}(undef, n_iter)
