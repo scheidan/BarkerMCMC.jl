@@ -188,8 +188,8 @@ function acceptance_prob(log_π, gradient,
         # same as:
         # l += log(1 + exp(-z[i] * c[i])) -
         #    log( 1 + exp( z[i] * cᵖ[i]))
-        l += log1p(exp(-z[i] *  c[i])) -
-            log1p(exp(  z[i] * cᵖ[i]))
+        l += log1pexp(-z[i] * c[i]) -
+            log1pexp(  z[i] * cᵖ[i])
     end
     return min(1, exp(l))
 end
@@ -219,3 +219,10 @@ end
 
 
 end
+
+
+"""
+Numerically stable computation of:
+  `log(1+exp(x))`
+"""
+log1pexp(x) = max(x, 0) + log1p(exp(-abs(x)))
