@@ -102,6 +102,7 @@ function barker_mcmc(lp,
     log_σ = log(σ)
     μ = zeros(d)
     Σ = diagm(proposal_scale.^2)
+    tmp = similar(μ)
 
     M = preconditioning(Hermitian(Σ))
 
@@ -133,11 +134,19 @@ function barker_mcmc(lp,
         # -- adaptation, see Livingstone, eq(24) - eq(26)
         if t <= n_iter_adaptation
             γ = t^(-κ)              # learning rate
-
             log_σ += γ*(prob_accept - target_acceptance_rate)
-            μ .+= γ .* (chain[t,:] .- μ)
-            tmp = chain[t,:] - μ
-            Σ .+= γ*(tmp * tmp' - Σ)
+
+            # The code below is identical to:
+            # μ .+= γ .* (chain[t,:] .- μ)
+            # tmp = chain[t,:] - μ
+            # Σ .+= γ*(tmp * tmp' - Σ)
+            @inbounds for i in eachindex(μ)
+                μ[i] += γ*(chain[t,i] - μ[i])
+                tmp[i] = chain[t,i] - μ[i]
+            end
+            @inbounds for j in axes(Σ, 2), i in axes(Σ, 1)
+                Σ[i,j] += γ*(tmp[i]*tmp[j] - Σ[i,j])
+            end
 
             M = preconditioning(Hermitian(Σ))
         end
