@@ -3,7 +3,7 @@ module BarkerMCMC
 export barker_mcmc
 
 using LinearAlgebra
-using ProgressMeter: @showprogress
+import ProgressMeter
 import LogDensityProblems
 
 include("logdensityproblem_interface.jl")
@@ -22,6 +22,7 @@ barker_mcmc(lp,
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
             n_iter_adaptation = Inf,
+            show_progress = true,
             preconditioning::Function = BarkerMCMC.precond_eigen)
 ```
 
@@ -35,6 +36,7 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
             n_iter_adaptation = Inf,
+            show_progress = true,
             preconditioning::Function = BarkerMCMC.precond_eigen)
 ```
 
@@ -52,6 +54,7 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
 - `κ = 0.6`: controls adaptation speed, κ ∈ (0.5, 1). Larger values lead to slower adaptation, see Section 6.1
              in Livingstone et al. (2020).
 - `n_iter_adaptation = Inf`: number of iterations with adaptation
+- `show_progress = true`: show progress bar?
 - `preconditioning::Function = BarkerMCMC.precond_eigen`: Either `BarkerMCMC.precond_eigen` or `BarkerMCMC.precond_cholesky`. Calculating the preconditioning matrix with a cholesky decomposition is slighly cheaper, however, the eigen value decomposition allows for a proper rotation of the proposal distribution.
 
 ### Return Value
@@ -72,6 +75,7 @@ function barker_mcmc(lp,
                      proposal_scale = ones(length(inits)),
                      target_acceptance_rate = 0.4, κ::Float64 = 0.6,
                      n_iter_adaptation = Inf,
+                     show_progress = true,
                      preconditioning::Function = precond_eigen)
 
     d = LogDensityProblems.dimension(lp)
@@ -101,7 +105,8 @@ function barker_mcmc(lp,
 
     M = preconditioning(Hermitian(Σ))
 
-    @showprogress 1 "Sampling... " for t in 2:n_iter
+    p = ProgressMeter.Progress(n_iter; dt=1, desc="Sampling... ", enabled=show_progress)
+    for t in 2:n_iter
 
         x = @view chain[t-1,:]
 
@@ -131,12 +136,13 @@ function barker_mcmc(lp,
 
             log_σ += γ*(prob_accept - target_acceptance_rate)
             μ .+= γ .* (chain[t,:] .- μ)
-            tmp = x - μ
+            tmp = chain[t,:] - μ
             Σ .+= γ*(tmp * tmp' - Σ)
 
             M = preconditioning(Hermitian(Σ))
         end
 
+        ProgressMeter.next!(p)
     end
 
     return (samples = chain, log_p = log_ps)
@@ -218,11 +224,11 @@ function precond_eigen(Σ::Hermitian)
 end
 
 
-end
-
-
 """
 Numerically stable computation of:
   `log(1+exp(x))`
 """
 log1pexp(x) = max(x, 0) + log1p(exp(-abs(x)))
+
+
+end
