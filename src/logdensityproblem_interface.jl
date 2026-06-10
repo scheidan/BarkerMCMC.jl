@@ -4,15 +4,15 @@ import LogDensityProblems
 
 # Define a simple LogDensityProblem for the case were we have the
 # log density and gradient directly both as functions
-struct SimpleLogDensityProblem
-    log_p::Function
-    ∇log_p::Function
+struct SimpleLogDensityProblem{F,G}
+    log_p::F
+    ∇log_p::G
     dim::Int
 end
 
 LogDensityProblems.dimension(lp::SimpleLogDensityProblem) = lp.dim
 
-function LogDensityProblems.capabilities(::Type{SimpleLogDensityProblem})
+function LogDensityProblems.capabilities(::Type{<:SimpleLogDensityProblem})
     LogDensityProblems.LogDensityOrder{1}()
 end
 

@@ -157,7 +157,7 @@ function barker_mcmc(lp,
     return (samples = chain, log_p = log_ps)
 end
 
-# convince wrapper so that it can be used withouth the LogDensityProblems interface
+# convince wrapper so that it can be used without the LogDensityProblems interface
 function barker_mcmc(log_p::Function, ∇log_p::Function,
                      inits::AbstractVector;
                      kwargs...)

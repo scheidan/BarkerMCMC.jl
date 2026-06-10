@@ -1,6 +1,7 @@
 
 using BarkerMCMC
 using LinearAlgebra
+using Random
 using Statistics
 using Test
 
@@ -147,6 +148,32 @@ end
 
     end
 
+end
+
+
+@testset "SimpleLogDensityProblem" begin
+    log_p_simple(x) = -sum(abs2, x)/2
+    ∇log_p_simple(x) = -x
+
+    inits = ones(4)
+    lp = BarkerMCMC.SimpleLogDensityProblem(log_p_simple, ∇log_p_simple,
+                                            length(inits))
+    @test fieldtype(typeof(lp), :log_p) === typeof(log_p_simple)
+    @test fieldtype(typeof(lp), :∇log_p) === typeof(∇log_p_simple)
+    @test @inferred(BarkerMCMC.LogDensityProblems.logdensity_and_gradient(lp, inits)) ==
+        (log_p_simple(inits), ∇log_p_simple(inits))
+
+    Random.seed!(20260610)
+    res_lp = barker_mcmc(lp, inits; n_iter = 50, n_iter_adaptation = 40,
+                         show_progress = false,
+                         preconditioning = BarkerMCMC.precond_cholesky)
+    Random.seed!(20260610)
+    res_functions = barker_mcmc(log_p_simple, ∇log_p_simple, inits;
+                                n_iter = 50, n_iter_adaptation = 40,
+                                show_progress = false,
+                                preconditioning = BarkerMCMC.precond_cholesky)
+    @test isequal(res_lp.samples, res_functions.samples)
+    @test isequal(res_lp.log_p, res_functions.log_p)
 end
 
 
