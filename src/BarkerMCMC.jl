@@ -130,7 +130,7 @@ function barker_mcmc(lp,
             γ = t^(-κ)              # learning rate
 
             log_σ += γ*(prob_accept - target_acceptance_rate)
-            μ .+= γ .* (x .- μ)
+            μ .+= γ .* (chain[t,:] .- μ)
             tmp = x - μ
             Σ .+= γ*(tmp * tmp' - Σ)
 
