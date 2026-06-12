@@ -34,10 +34,46 @@ using Test
         @test isapprox.(2^i, stds[i], rtol = 0.15)
     end
 
+    # eigen value with z_shift
+    res = barker_mcmc(log_p_mvnormal_ind, ∇log_p_mvnormal_ind,
+                      ones(5);
+                      n_iter=100_000,
+                      z_shift = 10,
+                      preconditioning = BarkerMCMC.precond_eigen
+                      )
+
+    means = mean(res.samples[1000:end,:], dims=1)
+    for i in 1:5
+        @test isapprox(0.0, means[i], atol = 2^i*0.1)
+    end
+
+    stds = std(res.samples[1000:end,:], dims=1)
+    for i in 1:5
+        @test isapprox.(2^i, stds[i], rtol = 0.15)
+    end
+
     # cholesky
     res = barker_mcmc(log_p_mvnormal_ind, ∇log_p_mvnormal_ind,
                       ones(5);
                       n_iter=100_000,
+                      preconditioning = BarkerMCMC.precond_cholesky
+                      )
+
+    means = mean(res.samples[1000:end,:], dims=1)
+    for i in 1:5
+        @test isapprox(0.0, means[i], atol =  2^i*0.1)
+    end
+
+    stds = std(res.samples[1000:end,:], dims=1)
+    for i in 1:5
+        @test isapprox.(2^i, stds[i], rtol = 0.15)
+    end
+
+    # cholesky with z_shift
+    res = barker_mcmc(log_p_mvnormal_ind, ∇log_p_mvnormal_ind,
+                      ones(5);
+                      n_iter=100_000,
+                      z_shift = 10,
                       preconditioning = BarkerMCMC.precond_cholesky
                       )
 
@@ -64,9 +100,10 @@ end
                        0.5 1])
         Mpred = BarkerMCMC.precond_cholesky(Σ)
         grad = [0.0, 0.0]
+        z = 0
 
         xp = hcat((
-            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
+            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred, z)[1]
             for i in 1:n)...)
 
         @test mean(xp[1,:]) < 3*sqrt(2/n)
@@ -87,16 +124,17 @@ end
                        0 1])
         Mpred = BarkerMCMC.precond_cholesky(Σ)
         grad = [1000.0, 1000.0]
+        z = 0
 
         xp = hcat((
-            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
+            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred, z)[1]
             for i in 1:n)...)
 
         @test sum((xp[1,:] .> 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant I
 
         grad = [-1000.0, 1000.0]
         xp = hcat((
-            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
+            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred, z)[1]
             for i in 1:n)...)
 
         @test sum((xp[1,:] .< 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant II
@@ -116,9 +154,10 @@ end
                        0.5 1])
         Mpred = BarkerMCMC.precond_eigen(Σ)
         grad = [0.0, 0.0]
+        z = 0
 
         xp = hcat((
-            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
+            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred, z)[1]
             for i in 1:n)...)
 
         @test mean(xp[1,:]) < 3*sqrt(2/n)
@@ -132,16 +171,17 @@ end
                        0 1])
         Mpred = BarkerMCMC.precond_eigen(Σ)
         grad = [1000.0, 1000.0]
+        z = 0
 
         xp = hcat((
-            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
+            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred, z)[1]
             for i in 1:n)...)
 
         @test sum((xp[1,:] .> 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant I
 
         grad = [-1000.0, 1000.0]
         xp = hcat((
-            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred)[1]
+            BarkerMCMC.barker_proposal(x, grad, 1.0, Mpred, z)[1]
             for i in 1:n)...)
 
         @test sum((xp[1,:] .< 0) .& (xp[2,:] .> 0) ) > 0.9*n # quadrant II

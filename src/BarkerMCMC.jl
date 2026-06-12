@@ -21,6 +21,7 @@ barker_mcmc(lp,
             proposal_scale = ones(length(inits)),
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
+            z_shift = 0,
             n_iter_adaptation = Inf,
             covariance_adaptation = :full,
             show_progress = true,
@@ -36,6 +37,7 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
             proposal_scale = ones(length(inits)),
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
+            z_shift = 0,
             n_iter_adaptation = Inf,
             covariance_adaptation = :full,
             show_progress = true,
@@ -58,6 +60,8 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
 - `n_iter_adaptation = Inf`: number of iterations with adaptation
 - `covariance_adaptation = :full`: use `:full` to adapt variances and correlations,
   or `:diagonal` to adapt only per-dimension variances.
+- `z_shift = 0`: with larger values small jumps become less likely. This may be beneficial in high dimensions.
+See [here](https://github.com/gzanella/barker/blob/7406350fe674bb27178339f342cfd9569845141b/BarkerScheme.R#L26) for details.
 - `show_progress = true`: show progress bar?
 - `preconditioning::Function = BarkerMCMC.precond_eigen`: Either `BarkerMCMC.precond_eigen` or `BarkerMCMC.precond_cholesky`. Calculating the preconditioning matrix with a cholesky decomposition is slighly cheaper, however, the eigen value decomposition allows for a proper rotation of the proposal distribution.
 
@@ -77,7 +81,9 @@ function barker_mcmc(lp,
                      inits::AbstractVector;
                      n_iter = 100::Int, σ = 2.4/(length(inits)^(1/6)),
                      proposal_scale = ones(length(inits)),
-                     target_acceptance_rate = 0.4, κ::Float64 = 0.6,
+                     target_acceptance_rate = 0.4,
+                     κ::Float64 = 0.6,
+                     z_shift = 0,
                      n_iter_adaptation = Inf,
                      covariance_adaptation = :full,
                      show_progress = true,
@@ -119,7 +125,7 @@ function barker_mcmc(lp,
         x = @view chain[t-1,:]
 
         # -- sample proposal
-        xᵖ, z = barker_proposal(x, gradient, exp(log_σ), M)
+        xᵖ, z = barker_proposal(x, gradient, exp(log_σ), M, z_shift)
 
         log_πᵖ, gradientᵖ = LogDensityProblems.logdensity_and_gradient(lp, xᵖ)
 
@@ -183,11 +189,18 @@ end
 """
 Preconditioned Barker proposal. Proposal is transformed by matrix `M` .
 See Algorithm 7.2, Livingstone et al. (2020), supporting material.
+
+The argument `z_shift` shifts the distributions of z relative to it's standard deviation:
+```
+z ~ N(z_shift*σ, σ^2)
+```
+A larger shift makes very small jumps less likely.
+See [here](https://github.com/gzanella/barker/blob/7406350fe674bb27178339f342cfd9569845141b/BarkerScheme.R#L26) for details.
 """
 function barker_proposal(x::AbstractArray, gradient::AbstractArray,
-                         σ::Float64, M::AbstractMatrix)
+                         σ::Float64, M::AbstractMatrix, z_shift)
 
-    z = σ .* randn(length(x))
+    z =  σ .* (z_shift .+ randn(length(x)))
     c = gradient' * M
     for i in eachindex(z)
         p = inv( 1 + exp(-z[i] * c[i]) )
