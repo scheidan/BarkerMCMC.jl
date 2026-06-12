@@ -10,9 +10,9 @@ of gradient information. It was the proposed by Livingstone et
 al. (2021).
 
 The adaptative preconditioning is based on Andrieu and Thoms (2008),
-Algorithm 4 in Section 5. We followed the Algorithm 7.2 of the
-supporting information of Livingstone et al. (2021) with slight
-modifications.
+Algorithm 4 in Section 5. Both the diagonal and full preconditioned
+Barker proposals from Algorithms 7.1 and 7.2 of the supporting
+information of Livingstone et al. (2021) are available.
 
 
 You can find the repository with the source code [here](https://github.com/scheidan/BarkerMCMC.jl).
@@ -117,6 +117,17 @@ With adaptation enabled, `proposal_scale` initializes the
 preconditioning matrix and adaptation may later change the effective
 per-dimension scales. With `n_iter_adaptation = 0`, the fixed proposal
 scale in dimension `i` is `σ * proposal_scale[i]`.
+
+By default, `covariance_adaptation = :full` learns variances and
+correlations. To learn only per-dimension variances, use the diagonal
+adaptation from Algorithm 7.1:
+
+```Julia
+results = barker_mcmc(lp,
+                      inits;
+                      covariance_adaptation = :diagonal,
+                      n_iter = 10_000)
+```
 
 See the example below how the results can be visualized.
 

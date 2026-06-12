@@ -22,6 +22,7 @@ barker_mcmc(lp,
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
             n_iter_adaptation = Inf,
+            covariance_adaptation = :full,
             show_progress = true,
             preconditioning::Function = BarkerMCMC.precond_eigen)
 ```
@@ -36,6 +37,7 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
             target_acceptance_rate = 0.4,
             κ::Float64 = 0.6,
             n_iter_adaptation = Inf,
+            covariance_adaptation = :full,
             show_progress = true,
             preconditioning::Function = BarkerMCMC.precond_eigen)
 ```
@@ -54,6 +56,8 @@ barker_mcmc(log_p::Function, ∇log_p::Function,
 - `κ = 0.6`: controls adaptation speed, κ ∈ (0.5, 1). Larger values lead to slower adaptation, see Section 6.1
              in Livingstone et al. (2020).
 - `n_iter_adaptation = Inf`: number of iterations with adaptation
+- `covariance_adaptation = :full`: use `:full` to adapt variances and correlations,
+  or `:diagonal` to adapt only per-dimension variances.
 - `show_progress = true`: show progress bar?
 - `preconditioning::Function = BarkerMCMC.precond_eigen`: Either `BarkerMCMC.precond_eigen` or `BarkerMCMC.precond_cholesky`. Calculating the preconditioning matrix with a cholesky decomposition is slighly cheaper, however, the eigen value decomposition allows for a proper rotation of the proposal distribution.
 
@@ -75,6 +79,7 @@ function barker_mcmc(lp,
                      proposal_scale = ones(length(inits)),
                      target_acceptance_rate = 0.4, κ::Float64 = 0.6,
                      n_iter_adaptation = Inf,
+                     covariance_adaptation = :full,
                      show_progress = true,
                      preconditioning::Function = precond_eigen)
 
@@ -86,6 +91,8 @@ function barker_mcmc(lp,
         error("The initial values must be of length $(d)!")
     (0.5 < κ < 1) ||
         error("κ must be in (0.5, 1)!")
+    covariance_adaptation ∈ (:full, :diagonal) ||
+        error("Argument `covariance_adaptation` must be `:full` or `:diagonal`!")
 
     chain = Array{Float64}(undef, n_iter, d)
     log_ps = Vector{Float64}(undef, n_iter)
@@ -136,16 +143,23 @@ function barker_mcmc(lp,
             γ = t^(-κ)              # learning rate
             log_σ += γ*(prob_accept - target_acceptance_rate)
 
-            # The code below is identical to:
+            # The mean and full covariance updates are identical to:
             # μ .+= γ .* (chain[t,:] .- μ)
             # tmp = chain[t,:] - μ
             # Σ .+= γ*(tmp * tmp' - Σ)
+            # Diagonal adaptation applies the last update only to diag(Σ).
             @inbounds for i in eachindex(μ)
                 μ[i] += γ*(chain[t,i] - μ[i])
                 tmp[i] = chain[t,i] - μ[i]
             end
-            @inbounds for j in axes(Σ, 2), i in axes(Σ, 1)
-                Σ[i,j] += γ*(tmp[i]*tmp[j] - Σ[i,j])
+            if covariance_adaptation == :diagonal
+                @inbounds for i in axes(Σ, 1)
+                    Σ[i,i] += γ*(tmp[i]^2 - Σ[i,i])
+                end
+            else  # full adaptation
+                @inbounds for j in axes(Σ, 2), i in axes(Σ, 1)
+                    Σ[i,j] += γ*(tmp[i]*tmp[j] - Σ[i,j])
+                end
             end
 
             M = preconditioning(Hermitian(Σ))

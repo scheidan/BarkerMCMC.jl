@@ -8,8 +8,10 @@ A Monte Carlo Markov Chain sampler that makes use of gradient
 information. Proposed by Livingstone et al. (2021)
 
 The adaptative preconditioning is based on Andrieu and Thoms (2008),
-Algorithm 4 in Section 5. For details see Algorithm 7.2 of the supporting information
-of Livingstone et al. (2021).
+Algorithm 4 in Section 5. Both diagonal adaptation, following Algorithm
+7.1, and full covariance adaptation, following Algorithms 7.2 and 7.3,
+of the supporting information of Livingstone et al. (2021) are
+available.
 
 ### Installation
 
@@ -23,6 +25,10 @@ The sampler can used in two ways:
 - providing two seperate functions for the log density and it's gradient.
 
 See the [documentation](http://scheidan.github.io/BarkerMCMC.jl/dev) for examples of both approaches.
+
+Use `covariance_adaptation = :diagonal` to adapt only per-dimension
+variances. The default `covariance_adaptation = :full` also learns
+correlations.
 
 
 ### Related Julia Packages
